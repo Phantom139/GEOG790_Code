@@ -11,7 +11,7 @@ import math
 
 # Create our data folder if we need to.
 currentFilePath = os.path.realpath(__file__)
-currentDir = os.path.dirname(full_path)
+currentDir = os.path.dirname(currentFilePath)
 trgDir = currentDir + '/Data/'
 if not os.path.exists(trgDir):
     os.makedirs(trgDir)	
