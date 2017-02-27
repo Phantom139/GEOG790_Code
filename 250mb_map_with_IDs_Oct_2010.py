@@ -9,8 +9,15 @@ import csv
 from netCDF4 import Dataset # This is important for reading in netCDF4 files below
 import math
 
+# Create our data folder if we need to.
+currentFilePath = os.path.realpath(__file__)
+currentDir = os.path.dirname(full_path)
+trgDir = currentDir + '/Data/'
+if not os.path.exists(trgDir):
+    os.makedirs(trgDir)	
+
 # Change directory to where data is stored
-os.chdir('D:/Robert Docs/College/NIU/GEOG 790/OCT26_CASE') # Insert directory here or comment out if running script in directory where files are saved
+os.chdir(trgDir) # Insert directory here or comment out if running script in directory where files are saved
 
 # Assign each nc file to variable to read in data
 nc_file_uwnd=Dataset('uwnd.2010.nc') # u-wind data
@@ -49,19 +56,19 @@ six_hr_time=12 # Enter '0' for 00Z, '6' for 06Z, '12' for 12Z or '18' for 18Z
 i6hr_time=six_hr_time/6 # Divide by 6 so '0' = 00Z, '1' = 06Z, '2' = 12Z and '3' = 18Z
 
 # Load in jet superposition ID Data
-os.chdir('D:/Robert Docs/College/NIU/GEOG 790/OCT26_CASE') # Insert directory here or comment out if running script in directory where files are saved
+os.chdir(trgDir) # Insert directory here or comment out if running script in directory where files are saved
 ovrlp_matrix_2d=np.loadtxt('ovrlps_oct_2010_NCEP_python.txt') # Load .txt file of jet superposition ID's
 ovrlp_ids=ovrlp_matrix_2d.reshape(ilat,ilon,iday,ihr) # The variable 'ovrlp_ids' will have dimensions lat x lon x # days in October x 4 6-hr periods (00Z, 06Z, 12Z and 18Z)
 ovrlp_case=np.squeeze(ovrlp_ids[:,:,ioct_date,i6hr_time]) # This line selects overlap data for all latitude and longitude points for date/time specified earlier
 
 # Load in polar ID Data
-os.chdir('D:/Robert Docs/College/NIU/GEOG 790/OCT26_CASE') # Insert directory here or comment out if running script in directory where files are saved
+os.chdir(trgDir) # Insert directory here or comment out if running script in directory where files are saved
 polj_matrix_2d=np.loadtxt('poljs_oct_2010_NCEP_python.txt') # Load .txt file of polar jet ID's
 polj_ids=polj_matrix_2d.reshape(ilat,ilon,iday,ihr) # The variable 'ovrlp_ids' will have dimensions lat x lon x # days in October x 4 6-hr periods (00Z, 06Z, 12Z and 18Z)
 polj_case=np.squeeze(polj_ids[:,:,ioct_date,i6hr_time]) # This line selects overlap data for all latitude and longitude points for date/time specified earlier
 
 # Load in subtropical jet ID Data
-os.chdir('D:/Robert Docs/College/NIU/GEOG 790/OCT26_CASE') # Insert directory here or comment out if running script in directory where files are saved
+os.chdir(trgDir) # Insert directory here or comment out if running script in directory where files are saved
 stj_matrix_2d=np.loadtxt('stjs_oct_2010_NCEP_python.txt') # Load .txt file of subtropical jet ID's
 stj_ids=stj_matrix_2d.reshape(ilat,ilon,iday,ihr) # The variable 'ovrlp_ids' will have dimensions lat x lon x # days in October x 4 6-hr periods (00Z, 06Z, 12Z and 18Z)
 stj_case=np.squeeze(stj_ids[:,:,ioct_date,i6hr_time]) # This line selects overlap data for all latitude and longitude points for date/time specified earlier

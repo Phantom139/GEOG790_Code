@@ -7,6 +7,13 @@ import pylab as py
 import os
 import csv
 
+# Create our data folder if we need to.
+currentFilePath = os.path.realpath(__file__)
+currentDir = os.path.dirname(full_path)
+trgDir = currentDir + '/Data/'
+if not os.path.exists(trgDir):
+    os.makedirs(trgDir)	
+
 # Set up vectors representing 2.5 deg lat, lon values for NCEP/NCAR reanalysis data:
 lat=np.linspace(5,85,33)
 lon=np.linspace(-177.5,180,144)
@@ -59,11 +66,11 @@ for year in range(2010,2011): # Loop through all years of interest (end of range
                         print filename
                 else:
                     print [filename,2]
-                os.chdir('Z:\GEOG790\OCT26_CASE') # Change directory to where .txt files are saved (comment out if not necessary)
+                os.chdir(trgDir) # Change directory to where .txt files are saved (comment out if not necessary)
                 reader=csv.reader(open(filename,"rb"),delimiter=',')
                 x=list(reader)
                 ovrlp_data=np.array(x).astype('double')
-                os.chdir('Z:\GEOG790\OCT26_CASE') # Change directory to where you want to save newly created .txt files (comment out if not necessary)
+                os.chdir(trgDir) # Change directory to where you want to save newly created .txt files (comment out if not necessary)
                 ovrlps=ovrlp_data[:,4] # Superposition ID's now in vector form
                 ovrlp_find=np.array(ovrlps==10) # Find all elements where superposition ID is present (marked as a "10" in the NCEP/NCAR Reanalysis 1 ID dataset)
                 lat_pts=ovrlp_data[ovrlp_find,2] # Vectors of lat, lon and ovrlp data (this line and next two lines)
