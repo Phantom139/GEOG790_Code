@@ -86,7 +86,7 @@ stj_case=np.flipud(stj_case)
 
 # Plot Data with ID's
 contour_lvls_wind=[30,40,50,60,70,80,90,100] # Contour levels for wind at 250 hPa
-fig2_plt=plt.contour(lon,lat,land,[0,0],colors=[(0.6,0.6,0.6)]) # Plot basic NCEP/NCAR Reanalysis 1 LandMask (use Basemap tool to plot better one)
+fig2_plt=plt.contour(lon,lat,land,[0,1],colors=[(0.6,0.6,0.6)]) # Plot basic NCEP/NCAR Reanalysis 1 LandMask (use Basemap tool to plot better one)
 fig2_plt=plt.contour(lon,lat,np.squeeze(mag_wind[np.where(p==250),:,:]),contour_lvls_wind,colors=[(0,0,0)],linewidths=2) # Plot wind speed as fill pattern
 # plt.colorbar(fig2_plt) # Colorbar; insert as line after any line where you use the "plt.contourf" command
 fig2_plt=plt.contour(lon,lat,polj_case,colors=[(0,0.5,0)],linewidths=1) # Plot polar jet ID's
