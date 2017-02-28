@@ -9,6 +9,8 @@ import numpy as np
 import pylab as py
 import os
 import csv
+from netCDF4 import Dataset # This is important for reading in netCDF4 files below
+import math
 
 # Create our data folder if we need to.
 currentFilePath = os.path.realpath(__file__)
@@ -19,7 +21,7 @@ if not os.path.exists(trgDir):
 	
 # Load in Ze Data
 os.chdir(trgDir) # Insert directory here or comment out if running script in directory where files are saved
-atempnc=Dataset('air.2010.nc') # aur temperature data (In Units of Kelvin)
+atempnc=Dataset('air.2010.nc') # air temperature data (In Units of Kelvin)
 uwndnc=Dataset('uwnd.2010.nc') # u-wind data
 vwndnc=Dataset('vwnd.2010.nc') # v-wind data
 hgtnc=Dataset('hgt.2010.nc') # Geopotential height data
@@ -39,20 +41,64 @@ p=uwndnc.variables['level'][:] # Vector of isobaric levels (17)
 ## Coriolis Parameter (f = 2OM * sin(phi))
 Omega = 7.29*math.pow(10,-5)
 TwoOmega = 2*Omega
-CorPar = TwoOmega*np.sin(lat)
 
 ## Fetch the landmask for the plot region
-land=np.squeeze(nc_file_land.variables['land'][:,:])
+land=np.squeeze(landnc.variables['land'][:,:])
 land=land[2:35,:]
 
 ## Wind Velocity (Magnitude)
 wVel = (u**2+v**2)**0.5
+wVelLow = wVel[np.where(p==1000),:,:]
+wVelHigh = wVel[np.where(p==500),:,:]
+
+geoHgtLow=geo_hght[np.where(p==1000),:,:]
+geoHgtHigh=geo_hght[np.where(p==500),:,:]
 
 # Step 2: Calculate Potential Temperature for each point at 1000mb (Lower), 700mb (Middle), and 500mb (Upper)
 ## PT = T (P0 / P) ^ (R/Cp); P0 = 1000mb, R = 287, Cp = 1004
-ROverCp = 287/1004
 
+ROverCp = 287./1004
+
+PHi = float(500)
+PMed = float(700)
+PLow = float(1000)
+
+PotTempLow = T[np.where(p==1000),:,:]*(1000/PLow)**ROverCp
+PotTempMid = T[np.where(p==700),:,:]*(1000/PMed)**ROverCp
+PotTempHigh = T[np.where(p==500),:,:]*(1000/PHi)**ROverCp
 
 # Step 3: Calculate Baroclinic Instability
+## BI = 0.31 * ((f) / (SQRT( (g/PTm) * ((PTu - PTl) / (GHu - GHl)) ))) * ((Vu - Vl) / (GHu - GHl))
+gConst=9.81
+
+## Indexing
+ilat=len(lat) # 'ilat' represents the total number of latitude points for each longitude
+ilon=len(lon) # 'ilon' represents the total number of longitude points for each latitude
+iday=31 # 'iday' represents the total number of calendar days in October
+ihr=4 # 'ihr' represents the number of 6-hourly periods per day (4 total: 00Z, 06Z, 12Z and 18Z)
+
+BI = np.zeros((ilat, ilon))
+
+landFlip=np.flipud(land)
+
+for i in range(0,ilat):
+	corPar = TwoOmega*math.sin(lat[i])
+	for j in range(0,ilon):	
+		PTDif = PotTempHigh[0,0,i,j] - PotTempLow[0,0,i,j]	
+		GeoDif = geoHgtHigh[0,0,i,j] - geoHgtLow[0,0,i,j]
+		Root = math.sqrt((gConst/PotTempMid[0,0,i,j]) * (PTDif / GeoDif))
+		Outer = ((wVelHigh[0,0,i,j]-wVelLow[0,0,i,j])/(geoHgtHigh[0,0,i,j]-geoHgtLow[0,0,i,j]))
+		
+		BI[i,j] = 0.31 * (corPar / Root) * (Outer)
 
 # Step 4: Plot...
+BIContours = [1e-7, 1e-6, 1e-5, 1e-4, 1e-3]
+fig2_plt=plt.contour(lon,lat,landFlip,[0,1],colors=[(0.6,0.6,0.6)])
+fig2_plt=plt.contour(lon,lat,BI,BIContours,colors=[(255./255,204./255,204./255), (255./255, 102./255, 102./255), (255./255, 0, 0), (204./255, 0, 0), (153./255, 0, 0)])
+plt.xlabel('Longitude (degrees)') # x-axis label
+plt.ylabel('Latitude (degrees)') # y-axis label
+plt.suptitle('Baroclinic Instability')
+
+#plt.clabel(fig2_plt, fig2_plt.levels, inline=False, fmt='%r', fontsize=4)
+
+plt.show()
