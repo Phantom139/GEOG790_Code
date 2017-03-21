@@ -1,7 +1,7 @@
 # This script creates a plot for Baroclinic Instabilty for the range of values.
 # NC Files Can be Obtained From: ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis/
 # You can "inventory" a NetCDF file by using 'ncdump -b c "infile.nc" > "outfile.cdl"', which can be loaded in notepad, etc...
-# Definition: BI = 0.31 * ((f) / (SQRT( (g/PTm) * ((PTu - PTl) / (GHu - GHl)) ))) * ((Vu - Vl) / (GHu - GHl))
+# Definition: N = SQRT( (g/PTm) * ((PTu - PTl) / (GHu - GHl)) )
 
 # Import plotting, number, pylab tools
 import matplotlib.pyplot as plt
@@ -39,8 +39,7 @@ endingTimeIndex=1208
 for time in range(startingTimeIndex,endingTimeIndex):
 
 	validTime = datetime.combine(startDay, startHour) + timedelta(hours=(6 * time))
-	fileTimeStr = validTime.strftime("%m-%d-%Y-%HZ")
-	figName = saveDir + "bc_instability_" + str(fileTimeStr)
+	figName = saveDir + "brunt_vaisalla" + str(time)
 
 	T=np.squeeze(atempnc.variables['air'][time,:,2:35,:]) 
 	u=np.squeeze(uwndnc.variables['uwnd'][time,:,2:35,:]) # u-wind on 26 Oct 2010 1200 UTC (Python index value 1194; index 0 is 00Z 1 Oct. 2010)
@@ -88,7 +87,7 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	iday=31 # 'iday' represents the total number of calendar days in October
 	ihr=4 # 'ihr' represents the number of 6-hourly periods per day (4 total: 00Z, 06Z, 12Z and 18Z)
 
-	BI = np.zeros((ilat, ilon))
+	N = np.zeros((ilat, ilon))
 
 	for i in range(0,ilat):
 		corPar = TwoOmega*math.sin((lat[i]) * (np.pi / 180))
@@ -96,29 +95,27 @@ for time in range(startingTimeIndex,endingTimeIndex):
 			PTDif = PotTempHigh[0,0,i,j] - PotTempLow[0,0,i,j]	
 			GeoDif = geoHgtHigh[0,0,i,j] - geoHgtLow[0,0,i,j]
 			Root = math.sqrt((gConst/PotTempMid[0,0,i,j]) * (PTDif / GeoDif))
-			Outer = ((wVelHigh[0,0,i,j]-wVelLow[0,0,i,j])/(geoHgtHigh[0,0,i,j]-geoHgtLow[0,0,i,j]))
 			
-			BI[i,j] = 0.31 * (corPar / Root) * (Outer) * 86400
+			N[i,j] = Root * 86400
 
 	# Step 4: Plot...
 	#m = Basemap(llcrnrlon=0,llcrnrlat=5,urcrnrlon=360,urcrnrlat=85,projection='mill')	
 	m = Basemap(projection='ortho',lat_0=45,lon_0=-100,resolution='l')
 	m.drawcoastlines()
-	m.drawstates()
 	m.drawcountries()
 	m.drawmapboundary()
-	pRange = np.linspace(0.25, 2.5, 15, endpoint=True)
-	#cs = m.contour(lon, lat, BI, pRange, linewidths=0.5, colors='k')
-	ny = BI.shape[0] 
-	nx = BI.shape[1]
+	pRange = np.linspace(250, 1250, 15, endpoint=True)
+
+	ny = N.shape[0] 
+	nx = N.shape[1]
 	lons, lats = m.makegrid(nx, ny)
 	x, y = m(lons, lats)
-	cs = m.contourf(x, y, BI, pRange, cmap=plt.cm.jet)
+	cs = m.contourf(x, y, N, pRange, cmap=plt.cm.jet)
 	cbar = m.colorbar(cs,location='bottom',pad="5%")
 	cbar.set_label('day^-1')
 	
 	timeFormat = "%a %b %d %Y %H:%M"
-	title = "Baroclinic Instability (" + validTime.strftime(timeFormat) + ")"
+	title = "Brunt-Vaisalla Frequency Normalized (" + validTime.strftime(timeFormat) + ")"
 	plt.suptitle(title)
 
 	#plt.clabel(fig2_plt, fig2_plt.levels, inline=False, fmt='%r', fontsize=4)
