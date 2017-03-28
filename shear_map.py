@@ -75,9 +75,10 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	#m = Basemap(llcrnrlon=0,llcrnrlat=5,urcrnrlon=360,urcrnrlat=85,projection='mill')	
 	m = Basemap(projection='ortho',lat_0=45,lon_0=-100,resolution='l')
 	m.drawcoastlines()
+	m.drawstates()
 	m.drawcountries()
 	m.drawmapboundary()
-	pRange = np.linspace(50, 1000, 15, endpoint=True)
+	pRange = np.linspace(1, 1000, 15, endpoint=True)
 
 	ny = Shear.shape[0] 
 	nx = Shear.shape[1]
@@ -88,7 +89,7 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	cbar.set_label('m/day')
 	
 	timeFormat = "%a %b %d %Y %H:%M"
-	title = "BC Shear Term (" + validTime.strftime(timeFormat) + ")"
+	title = "BC Shear Term (" + validTime.strftime(timeFormat) + ") (Normalized)"
 	plt.suptitle(title)
 
 	#plt.clabel(fig2_plt, fig2_plt.levels, inline=False, fmt='%r', fontsize=4)
