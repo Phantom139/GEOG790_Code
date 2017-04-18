@@ -37,6 +37,10 @@ startHour = time(0, 0, 0)
 startingTimeIndex=1184
 endingTimeIndex=1208
 
+#matplotlib.rcParams.update({'font.size': 4})
+matplotlib.rcParams.update({'savefig.dpi': 300, 'font.size': 6})	
+plt.rc('xtick', labelsize=4)
+
 for time in range(startingTimeIndex,endingTimeIndex):
 
 	validTime = datetime.combine(startDay, startHour) + timedelta(hours=(6 * time))
@@ -92,8 +96,6 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	BI = np.zeros((ilat, ilon))
 	Shear = np.zeros((ilat, ilon))
 	N = np.zeros((ilat, ilon))
-	
-	matplotlib.rcParams.update({'font.size': 8})
 
 	for i in range(0,ilat):
 		corPar = TwoOmega*math.sin((lat[i]) * (np.pi / 180))
@@ -110,8 +112,8 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	# Step 4: Plot...
 	fig = plt.figure()
 	
-	m1 = plt.subplot2grid((2,2), (0,0), colspan=2)
-	m1 = Basemap(projection='ortho',lat_0=45,lon_0=-100,resolution='l')
+	ax1 = plt.subplot2grid((2,2), (0,0), colspan=2)
+	m1 = Basemap(projection='mill',llcrnrlon=120,llcrnrlat=20,urcrnrlon=300,urcrnrlat=70)
 	m1.drawcoastlines()
 	m1.drawstates()
 	m1.drawcountries()
@@ -125,8 +127,8 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	cbar1 = m1.colorbar(cs1,location='bottom',pad="5%")
 	cbar1.set_label('day^-1')
 
-	m2 = plt.subplot2grid((2,2), (1,0))	
-	m2 = Basemap(projection='ortho',lat_0=45,lon_0=-100,resolution='l')
+	ax2 = plt.subplot2grid((2,2), (1,0))	
+	m2 = Basemap(projection='mill',llcrnrlon=120,llcrnrlat=20,urcrnrlon=300,urcrnrlat=70)
 	m2.drawcoastlines()
 	m2.drawstates()
 	m2.drawcountries()
@@ -140,8 +142,8 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	cbar2 = m2.colorbar(cs2,location='bottom',pad="5%")
 	cbar2.set_label('day^-1')	
 	
-	m3 = plt.subplot2grid((2,2), (1,1))	
-	m3 = Basemap(projection='ortho',lat_0=45,lon_0=-100,resolution='l')
+	ax3 = plt.subplot2grid((2,2), (1,1))	
+	m3 = Basemap(projection='mill',llcrnrlon=120,llcrnrlat=20,urcrnrlon=300,urcrnrlat=70)
 	m3.drawcoastlines()
 	m3.drawstates()
 	m3.drawcountries()
@@ -157,8 +159,15 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	
 	# Finalize the plot
 	timeFormat = "%a %b %d %Y %H:%M"
-	title = "Baroclinic Instability (" + validTime.strftime(timeFormat) + ")"
+	title = "Baroclinic Components (" + validTime.strftime(timeFormat) + ")"
 	plt.suptitle(title)
+	
+	t1 = "Baroclinic Instability (Normalized)"
+	ax1.title.set_text(t1)
+	t2 = "Baroclinic Stability Component (Normalized)"
+	ax2.title.set_text(t2)
+	t3 = "Baroclinic Shear Component (Normalized)"
+	ax3.title.set_text(t3)
 
 	#plt.clabel(fig2_plt, fig2_plt.levels, inline=False, fmt='%r', fontsize=4)
 

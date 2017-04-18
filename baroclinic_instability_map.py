@@ -4,6 +4,7 @@
 # Definition: BI = 0.31 * ((f) / (SQRT( (g/PTm) * ((PTu - PTl) / (GHu - GHl)) ))) * ((Vu - Vl) / (GHu - GHl))
 
 # Import plotting, number, pylab tools
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pylab as py
@@ -24,6 +25,8 @@ saveDir = currentDir + '/Figures/'
 if not os.path.exists(saveDir):
     os.makedirs(saveDir)		
 	
+	
+matplotlib.rcParams.update({'savefig.dpi': 300})		
 # Load in Ze Data
 os.chdir(trgDir) # Insert directory here or comment out if running script in directory where files are saved
 atempnc=Dataset('air.2010.nc') # air temperature data (In Units of Kelvin)
@@ -124,4 +127,6 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	#plt.clabel(fig2_plt, fig2_plt.levels, inline=False, fmt='%r', fontsize=4)
 
 	plt.savefig(figName)
+	#plt.show()
 	plt.close()
+	plt.clf()
