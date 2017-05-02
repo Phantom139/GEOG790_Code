@@ -61,27 +61,27 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	## Coriolis Parameter (f = 2OM * sin(phi))
 	Omega = 7.29*math.pow(10,-5)
 	TwoOmega = 2*Omega
+	
+	PHi = float(250)
+	PMed = float(500)
+	PLow = float(1000)	
 
 	## Wind Velocity (Magnitude)
 	wVel = (u**2+v**2)**0.5
-	wVelLow = wVel[np.where(p==1000),:,:]
-	wVelHigh = wVel[np.where(p==500),:,:]
+	wVelLow = wVel[np.where(p==PLow),:,:]
+	wVelHigh = wVel[np.where(p==PHi),:,:]
 
-	geoHgtLow=geo_hght[np.where(p==1000),:,:]
-	geoHgtHigh=geo_hght[np.where(p==500),:,:]
+	geoHgtLow=geo_hght[np.where(p==PLow),:,:]
+	geoHgtHigh=geo_hght[np.where(p==PHi),:,:]
 
 	# Step 2: Calculate Potential Temperature for each point at 1000mb (Lower), 700mb (Middle), and 500mb (Upper)
 	## PT = T (P0 / P) ^ (R/Cp); P0 = 1000mb, R = 287, Cp = 1004
 
 	ROverCp = 287./1004
 
-	PHi = float(500)
-	PMed = float(700)
-	PLow = float(1000)
-
-	PotTempLow = T[np.where(p==1000),:,:]*(1000/PLow)**ROverCp
-	PotTempMid = T[np.where(p==700),:,:]*(1000/PMed)**ROverCp
-	PotTempHigh = T[np.where(p==500),:,:]*(1000/PHi)**ROverCp
+	PotTempLow = T[np.where(p==PLow),:,:]*(1000/PLow)**ROverCp
+	PotTempMid = T[np.where(p==PMed),:,:]*(1000/PMed)**ROverCp
+	PotTempHigh = T[np.where(p==PHi),:,:]*(1000/PHi)**ROverCp
 
 	# Step 3: Calculate Baroclinic Instability
 	## BI = 0.31 * ((f) / (SQRT( (g/PTm) * ((PTu - PTl) / (GHu - GHl)) ))) * ((Vu - Vl) / (GHu - GHl))
@@ -94,6 +94,7 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	ihr=4 # 'ihr' represents the number of 6-hourly periods per day (4 total: 00Z, 06Z, 12Z and 18Z)
 
 	BI = np.zeros((ilat, ilon))
+	BI_F = np.zeros((ilat, ilon))
 	Shear = np.zeros((ilat, ilon))
 	N = np.zeros((ilat, ilon))
 
@@ -105,7 +106,8 @@ for time in range(startingTimeIndex,endingTimeIndex):
 			Root = math.sqrt((gConst/PotTempMid[0,0,i,j]) * (PTDif / GeoDif))
 			Outer = ((wVelHigh[0,0,i,j]-wVelLow[0,0,i,j])/(geoHgtHigh[0,0,i,j]-geoHgtLow[0,0,i,j]))
 			
-			BI[i,j] = 0.31 * (corPar / Root) * (Outer) * 86400
+			BI[i,j] = 0.31 * (corPar / Root) * (Outer) # * 86400
+			BI_F[i,j] = BI[i,j] * 100000
 			Shear[i,j] = Outer * (86400)
 			N[i,j] = Root * 86400
 
@@ -118,14 +120,14 @@ for time in range(startingTimeIndex,endingTimeIndex):
 	m1.drawstates()
 	m1.drawcountries()
 	m1.drawmapboundary()
-	pRange1 = np.linspace(0.25, 2.5, 15, endpoint=True)
-	ny1 = BI.shape[0] 
-	nx1 = BI.shape[1]
+	pRange1 = np.linspace(0.2, 3, 20, endpoint=True)
+	ny1 = BI_F.shape[0] 
+	nx1 = BI_F.shape[1]
 	lons1, lats1 = m1.makegrid(nx1, ny1)
 	x1, y1 = m1(lons1, lats1)
-	cs1 = m1.contourf(x1, y1, BI, pRange1, cmap=plt.cm.jet)
+	cs1 = m1.contourf(x1, y1, BI_F, pRange1, cmap=plt.cm.jet)
 	cbar1 = m1.colorbar(cs1,location='bottom',pad="5%")
-	cbar1.set_label('day^-1')
+	cbar1.set_label('s^-1 (E-6)')
 
 	ax2 = plt.subplot2grid((2,2), (1,0))	
 	m2 = Basemap(projection='mill',llcrnrlon=120,llcrnrlat=20,urcrnrlon=300,urcrnrlat=70)
